@@ -1,0 +1,176 @@
+@startuml Electron数据架构图
+!theme plain
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+title Electron 数据架构图 (TOGAF Data Architecture)
+
+package "数据流层" {
+  [IPC消息流] as IPCDataFlow
+  [事件流] as EventFlow
+  [状态管理] as StateManagement
+  [命令流] as CommandFlow
+}
+
+package "IPC消息数据" {
+  [同步消息] as SyncMessage
+  [异步消息] as AsyncMessage
+  [消息序列化] as MessageSerialization
+  [消息路由] as MessageRouting
+}
+
+package "事件数据" {
+  [窗口事件] as WindowEvents
+  [应用事件] as AppEvents
+  [系统事件] as SystemEvents
+  [自定义事件] as CustomEvents
+}
+
+package "状态数据" {
+  [应用状态] as AppState
+  [窗口状态] as WindowState
+  [会话状态] as SessionState
+  [用户偏好] as UserPreferences
+}
+
+package "存储层" {
+  [ASAR文件系统] as ASARFileSystem
+  [本地存储] as LocalStorage
+  [会话存储] as SessionStorage
+  [IndexedDB] as IndexedDBStorage
+  [文件系统] as FileSystem
+}
+
+package "数据交换格式" {
+  [JSON序列化] as JSONSerialization
+  [Mojo IPC] as MojoIPCFormat
+  [V8数据绑定] as V8Binding
+  [结构化克隆] as StructuredClone
+}
+
+package "数据安全" {
+  [上下文隔离] as ContextIsolation
+  [沙箱隔离] as SandboxIsolation
+  [内容安全策略] as CSP
+  [权限控制] as PermissionControl
+}
+
+package "数据持久化" {
+  [配置文件] as ConfigFiles
+  [用户数据] as UserData
+  [缓存数据] as CacheData
+  [日志文件] as LogFiles
+}
+
+package "数据访问层" {
+  [主进程数据访问] as MainProcessAccess
+  [渲染进程数据访问] as RendererProcessAccess
+  [工具进程数据访问] as UtilityProcessAccess
+  [共享数据访问] as SharedDataAccess
+}
+
+' 数据流关系
+IPCDataFlow --> SyncMessage
+IPCDataFlow --> AsyncMessage
+IPCDataFlow --> MessageSerialization
+IPCDataFlow --> MessageRouting
+
+EventFlow --> WindowEvents
+EventFlow --> AppEvents
+EventFlow --> SystemEvents
+EventFlow --> CustomEvents
+
+StateManagement --> AppState
+StateManagement --> WindowState
+StateManagement --> SessionState
+StateManagement --> UserPreferences
+
+CommandFlow --> IPCDataFlow
+
+' 数据交换
+MessageSerialization --> JSONSerialization
+MessageSerialization --> MojoIPCFormat
+MessageSerialization --> V8Binding
+MessageSerialization --> StructuredClone
+
+' 存储关系
+ASARFileSystem --> FileSystem
+LocalStorage --> FileSystem
+SessionStorage --> FileSystem
+IndexedDBStorage --> FileSystem
+
+' 数据安全
+ContextIsolation --> RendererProcessAccess
+SandboxIsolation --> RendererProcessAccess
+CSP --> RendererProcessAccess
+PermissionControl --> MainProcessAccess
+PermissionControl --> RendererProcessAccess
+
+' 数据持久化
+ConfigFiles --> FileSystem
+UserData --> FileSystem
+CacheData --> FileSystem
+LogFiles --> FileSystem
+
+' 数据访问
+MainProcessAccess --> IPCDataFlow
+MainProcessAccess --> StateManagement
+MainProcessAccess --> FileSystem
+
+RendererProcessAccess --> IPCDataFlow
+RendererProcessAccess --> EventFlow
+RendererProcessAccess --> LocalStorage
+RendererProcessAccess --> SessionStorage
+RendererProcessAccess --> IndexedDBStorage
+
+UtilityProcessAccess --> IPCDataFlow
+UtilityProcessAccess --> FileSystem
+
+SharedDataAccess --> MainProcessAccess
+SharedDataAccess --> RendererProcessAccess
+SharedDataAccess --> UtilityProcessAccess
+
+' 数据流到存储
+IPCDataFlow --> ASARFileSystem
+StateManagement --> UserData
+EventFlow --> LogFiles
+
+note right of IPCDataFlow
+  IPC消息流：
+  - 主进程与渲染进程间通信
+  - 支持复杂对象传递
+  - 自动序列化/反序列化
+end note
+
+note right of ASARFileSystem
+  ASAR文件系统：
+  - 将应用资源打包成单个文件
+  - 提供只读文件系统访问
+  - 优化应用启动性能
+end note
+
+note right of ContextIsolation
+  上下文隔离：
+  - 隔离主世界和隔离世界
+  - 通过context-bridge安全传递数据
+  - 防止数据污染和注入攻击
+end note
+
+note right of JSONSerialization
+  数据序列化：
+  - JSON用于IPC消息
+  - Mojo用于底层IPC
+  - V8绑定用于C++/JS交互
+  - 结构化克隆用于Worker通信
+end note
+
+note right of UserData
+  用户数据存储：
+  - 应用配置
+  - 用户偏好设置
+  - 会话数据
+  - 缓存文件
+end note
+
+@enduml
+

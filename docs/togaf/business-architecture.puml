@@ -1,0 +1,100 @@
+@startuml Electron业务架构图
+!theme plain
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+title Electron 业务架构图 (TOGAF Business Architecture)
+
+package "业务目标层" {
+  [提供跨平台桌面应用开发框架] as BusinessGoal
+  [降低桌面应用开发门槛] as Goal1
+  [统一Web技术与原生能力] as Goal2
+  [支持快速迭代和部署] as Goal3
+}
+
+package "利益相关者" {
+  [开发者] as Stakeholder1
+  [最终用户] as Stakeholder2
+  [维护团队] as Stakeholder3
+  [开源社区] as Stakeholder4
+}
+
+package "业务流程" {
+  [应用开发流程] as Process1
+  [构建打包流程] as Process2
+  [分发部署流程] as Process3
+  [运行维护流程] as Process4
+}
+
+package "业务能力" {
+  [跨平台支持能力] as Capability1
+  [原生API集成能力] as Capability2
+  [Web技术栈能力] as Capability3
+  [安全隔离能力] as Capability4
+  [性能优化能力] as Capability5
+}
+
+package "价值主张" {
+  [快速开发] as Value1
+  [代码复用] as Value2
+  [原生体验] as Value3
+  [生态丰富] as Value4
+}
+
+' 业务目标关系
+BusinessGoal --> Goal1
+BusinessGoal --> Goal2
+BusinessGoal --> Goal3
+
+' 利益相关者与业务目标
+Stakeholder1 --> BusinessGoal : 使用框架开发应用
+Stakeholder2 --> BusinessGoal : 使用桌面应用
+Stakeholder3 --> BusinessGoal : 维护框架
+Stakeholder4 --> BusinessGoal : 贡献代码
+
+' 业务流程关系
+Process1 --> Process2 : 开发完成
+Process2 --> Process3 : 构建完成
+Process3 --> Process4 : 部署完成
+
+' 业务能力支持业务流程
+Capability1 --> Process1 : 支持多平台开发
+Capability2 --> Process1 : 提供原生API
+Capability3 --> Process1 : 使用Web技术
+Capability4 --> Process4 : 保障安全
+Capability5 --> Process4 : 优化性能
+
+' 价值主张
+Value1 --> Capability3 : 基于Web技术
+Value2 --> Capability1 : 跨平台复用
+Value3 --> Capability2 : 原生能力
+Value4 --> Capability3 : 丰富生态
+
+' 利益相关者获得价值
+Stakeholder1 --> Value1
+Stakeholder1 --> Value2
+Stakeholder2 --> Value3
+Stakeholder1 --> Value4
+
+note right of BusinessGoal
+  Electron的核心业务目标：
+  让开发者能够使用Web技术
+  构建跨平台桌面应用
+end note
+
+note right of Process1
+  应用开发流程包括：
+  - 编写主进程代码
+  - 编写渲染进程代码
+  - 配置应用元数据
+end note
+
+note right of Capability1
+  跨平台支持：
+  - macOS
+  - Windows
+  - Linux
+end note
+
+@enduml
+

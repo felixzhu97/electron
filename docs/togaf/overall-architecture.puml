@@ -1,0 +1,180 @@
+@startuml Electron总体架构图
+!theme plain
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+title Electron 总体架构图 (TOGAF Overall Architecture)
+
+package "业务架构层" {
+  [业务目标] as BusinessGoal
+  [利益相关者] as Stakeholders
+  [业务流程] as BusinessProcess
+  [业务能力] as BusinessCapability
+}
+
+package "应用架构层" {
+  [主进程] as MainProcess
+  [渲染进程] as RendererProcess
+  [工具进程] as UtilityProcess
+  [IPC通信] as IPCCommunication
+  [API模块] as APIModules
+}
+
+package "数据架构层" {
+  [数据流] as DataFlow
+  [数据存储] as DataStorage
+  [数据交换] as DataExchange
+  [数据安全] as DataSecurity
+}
+
+package "技术架构层" {
+  [核心运行时] as CoreRuntime
+  [构建系统] as BuildSystem
+  [平台支持] as PlatformSupport
+  [开发工具] as DevTools
+}
+
+' 业务架构到应用架构
+BusinessGoal --> MainProcess : 实现业务目标
+BusinessProcess --> RendererProcess : 支持业务流程
+BusinessCapability --> APIModules : 提供业务能力
+
+' 应用架构到数据架构
+MainProcess --> DataFlow : 产生数据流
+RendererProcess --> DataFlow : 产生数据流
+IPCCommunication --> DataExchange : 数据交换
+APIModules --> DataStorage : 数据存储
+
+' 数据架构到技术架构
+DataFlow --> CoreRuntime : 运行时处理
+DataExchange --> CoreRuntime : 运行时支持
+DataStorage --> PlatformSupport : 平台存储
+DataSecurity --> CoreRuntime : 安全机制
+
+' 技术架构支撑应用架构
+CoreRuntime --> MainProcess : 提供运行时
+CoreRuntime --> RendererProcess : 提供运行时
+BuildSystem --> APIModules : 构建模块
+PlatformSupport --> IPCCommunication : 平台IPC
+
+' 跨层关系
+BusinessCapability --> CoreRuntime : 技术实现
+BusinessProcess --> DataFlow : 数据流转
+Stakeholders --> DevTools : 使用工具
+
+' 核心运行时详细组件
+package "核心运行时组件" {
+  [Chromium] as ChromiumCore
+  [Node.js] as NodeJSCore
+  [V8引擎] as V8Core
+}
+
+CoreRuntime --> ChromiumCore
+CoreRuntime --> NodeJSCore
+CoreRuntime --> V8Core
+
+' 应用架构详细组件
+package "应用架构组件" {
+  [Browser API] as BrowserAPI
+  [Renderer API] as RendererAPI
+  [Common API] as CommonAPI
+}
+
+APIModules --> BrowserAPI
+APIModules --> RendererAPI
+APIModules --> CommonAPI
+
+MainProcess --> BrowserAPI
+RendererProcess --> RendererAPI
+BrowserAPI --> CommonAPI
+RendererAPI --> CommonAPI
+
+' 数据架构详细组件
+package "数据架构组件" {
+  [IPC消息] as IPCMessage
+  [事件流] as EventStream
+  [ASAR存储] as ASARStorage
+  [本地存储] as LocalStorageData
+}
+
+DataFlow --> IPCMessage
+DataFlow --> EventStream
+DataStorage --> ASARStorage
+DataStorage --> LocalStorageData
+
+' 技术架构详细组件
+package "技术架构组件" {
+  [GN/Ninja] as BuildTools
+  [TypeScript] as TypeScriptTool
+  [Webpack] as WebpackTool
+}
+
+BuildSystem --> BuildTools
+BuildSystem --> TypeScriptTool
+BuildSystem --> WebpackTool
+
+' 平台支持详细组件
+package "平台组件" {
+  [macOS] as MacOS
+  [Windows] as Windows
+  [Linux] as Linux
+}
+
+PlatformSupport --> MacOS
+PlatformSupport --> Windows
+PlatformSupport --> Linux
+
+' 安全机制
+package "安全机制" {
+  [沙箱] as SandboxSec
+  [上下文隔离] as ContextIsolationSec
+  [CSP] as CSPSec
+}
+
+DataSecurity --> SandboxSec
+DataSecurity --> ContextIsolationSec
+DataSecurity --> CSPSec
+
+RendererProcess --> SandboxSec
+RendererProcess --> ContextIsolationSec
+RendererProcess --> CSPSec
+
+note top of BusinessGoal
+  业务架构层定义：
+  - 业务目标和价值主张
+  - 利益相关者需求
+  - 业务流程和业务能力
+end note
+
+note right of MainProcess
+  应用架构层定义：
+  - 主进程、渲染进程、工具进程
+  - IPC通信机制
+  - API模块和扩展支持
+end note
+
+note bottom of DataFlow
+  数据架构层定义：
+  - 数据流和事件流
+  - 数据存储机制
+  - 数据交换格式
+  - 数据安全措施
+end note
+
+note left of CoreRuntime
+  技术架构层定义：
+  - Chromium、Node.js、V8核心
+  - 构建系统和工具链
+  - 平台特定实现
+  - 开发工具和环境
+end note
+
+note right of IPCCommunication
+  关键接口：
+  - IPC Main/Renderer通信
+  - Mojo IPC底层通信
+  - Context Bridge安全通信
+end note
+
+@enduml
+

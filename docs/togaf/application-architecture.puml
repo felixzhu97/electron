@@ -1,0 +1,204 @@
+@startuml Electron应用架构图
+!theme plain
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+title Electron 应用架构图 (TOGAF Application Architecture)
+
+package "主进程 (Main Process)" {
+  [应用入口] as AppEntry
+  [Browser进程管理] as BrowserProcess
+  [窗口管理] as WindowManager
+  [菜单系统] as MenuSystem
+  [系统集成] as SystemIntegration
+  
+  package "Browser API" {
+    [app] as AppAPI
+    [BrowserWindow] as BrowserWindowAPI
+    [Menu] as MenuAPI
+    [Tray] as TrayAPI
+    [Dialog] as DialogAPI
+    [Session] as SessionAPI
+    [Protocol] as ProtocolAPI
+  }
+  
+  package "主进程实现" {
+    [shell/app] as ShellApp
+    [lib/browser] as LibBrowser
+    [shell/browser/api] as BrowserAPIImpl
+  }
+}
+
+package "渲染进程 (Renderer Process)" {
+  [WebContents] as WebContents
+  [DOM渲染] as DOMRender
+  [JavaScript执行] as JSRuntime
+  
+  package "Renderer API" {
+    [ipc-renderer] as IPCRenderer
+    [web-frame] as WebFrame
+    [context-bridge] as ContextBridge
+    [clipboard] as ClipboardAPI
+  }
+  
+  package "渲染进程实现" {
+    [shell/renderer] as ShellRenderer
+    [lib/renderer] as LibRenderer
+    [shell/renderer/api] as RendererAPIImpl
+  }
+  
+  package "隔离渲染器" {
+    [isolated-renderer] as IsolatedRenderer
+    [context-isolation] as ContextIsolation
+  }
+  
+  package "沙箱渲染器" {
+    [sandboxed-renderer] as SandboxedRenderer
+    [preload] as PreloadScript
+  }
+}
+
+package "工具进程 (Utility Process)" {
+  [Utility进程] as UtilityProcess
+  [网络服务] as NetworkService
+  [文件服务] as FileService
+  
+  package "Utility API" {
+    [utility-process] as UtilityAPI
+    [parent-port] as ParentPort
+  }
+  
+  package "工具进程实现" {
+    [shell/utility] as ShellUtility
+    [lib/utility] as LibUtility
+  }
+}
+
+package "IPC通信机制" {
+  [IPC Main] as IPCMain
+  [IPC Renderer] as IPCRenderer
+  [Mojo IPC] as MojoIPC
+  [消息通道] as MessageChannel
+  [消息端口] as MessagePort
+}
+
+package "API模块" {
+  [Common API] as CommonAPI
+  [Browser API] as BrowserAPIModule
+  [Renderer API] as RendererAPIModule
+  [Utility API] as UtilityAPIModule
+}
+
+package "扩展支持" {
+  [Chrome Extensions] as ChromeExtensions
+  [PDF Viewer] as PDFViewer
+  [扩展API] as ExtensionAPI
+}
+
+package "Node.js集成" {
+  [Node.js运行时] as NodeRuntime
+  [Node模块] as NodeModules
+  [ASAR文件系统] as ASARFS
+}
+
+' 主进程内部关系
+AppEntry --> BrowserProcess
+BrowserProcess --> WindowManager
+BrowserProcess --> MenuSystem
+BrowserProcess --> SystemIntegration
+BrowserProcess --> BrowserAPIImpl
+BrowserAPIImpl --> AppAPI
+BrowserAPIImpl --> BrowserWindowAPI
+BrowserAPIImpl --> MenuAPI
+BrowserAPIImpl --> TrayAPI
+BrowserAPIImpl --> DialogAPI
+BrowserAPIImpl --> SessionAPI
+BrowserAPIImpl --> ProtocolAPI
+ShellApp --> BrowserProcess
+LibBrowser --> BrowserAPIImpl
+
+' 渲染进程内部关系
+WebContents --> DOMRender
+WebContents --> JSRuntime
+WebContents --> RendererAPIImpl
+RendererAPIImpl --> IPCRenderer
+RendererAPIImpl --> WebFrame
+RendererAPIImpl --> ContextBridge
+RendererAPIImpl --> ClipboardAPI
+ShellRenderer --> RendererAPIImpl
+LibRenderer --> RendererAPIImpl
+IsolatedRenderer --> ContextIsolation
+SandboxedRenderer --> PreloadScript
+
+' 工具进程内部关系
+UtilityProcess --> NetworkService
+UtilityProcess --> FileService
+UtilityProcess --> UtilityAPI
+ShellUtility --> UtilityProcess
+LibUtility --> UtilityAPI
+
+' IPC通信
+IPCMain --> IPCRenderer : 双向通信
+IPCMain --> MojoIPC
+IPCRenderer --> MojoIPC
+MessageChannel --> MessagePort
+IPCMain --> MessageChannel
+IPCRenderer --> MessageChannel
+
+' 进程间通信
+BrowserProcess --> IPCMain
+WebContents --> IPCRenderer
+UtilityProcess --> IPCMain
+
+' API模块关系
+CommonAPI --> BrowserAPIModule
+CommonAPI --> RendererAPIModule
+CommonAPI --> UtilityAPIModule
+BrowserAPIImpl --> BrowserAPIModule
+RendererAPIImpl --> RendererAPIModule
+UtilityAPI --> UtilityAPIModule
+
+' 扩展支持
+BrowserProcess --> ChromeExtensions
+BrowserProcess --> PDFViewer
+ChromeExtensions --> ExtensionAPI
+PDFViewer --> ExtensionAPI
+
+' Node.js集成
+BrowserProcess --> NodeRuntime
+WebContents --> NodeRuntime
+NodeRuntime --> NodeModules
+NodeRuntime --> ASARFS
+
+note right of BrowserProcess
+  主进程负责：
+  - 应用生命周期管理
+  - 窗口创建和管理
+  - 系统级API调用
+  - IPC消息路由
+end note
+
+note right of WebContents
+  渲染进程负责：
+  - Web内容渲染
+  - JavaScript执行
+  - DOM操作
+  - 用户交互处理
+end note
+
+note right of IPCMain
+  IPC通信机制：
+  - 主进程与渲染进程通信
+  - 支持同步和异步消息
+  - 使用Mojo进行底层通信
+end note
+
+note right of ContextIsolation
+  上下文隔离：
+  - 隔离主世界和隔离世界
+  - 通过context-bridge安全通信
+  - 防止原型污染攻击
+end note
+
+@enduml
+

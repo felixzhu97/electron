@@ -1,0 +1,203 @@
+@startuml Electron技术架构图
+!theme plain
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+title Electron 技术架构图 (TOGAF Technology Architecture)
+
+package "核心运行时" {
+  [Chromium] as Chromium
+  [Node.js] as NodeJS
+  [V8引擎] as V8Engine
+  [libuv] as LibUV
+}
+
+package "Chromium组件" {
+  [Content模块] as ContentModule
+  [Blink渲染引擎] as BlinkEngine
+  [网络栈] as NetworkStack
+  [媒体栈] as MediaStack
+  [GPU加速] as GPUAcceleration
+}
+
+package "Node.js组件" {
+  [Node运行时] as NodeRuntime
+  [核心模块] as NodeCoreModules
+  [NPM生态] as NPMEcosystem
+  [事件循环] as EventLoop
+}
+
+package "构建系统" {
+  [GN构建系统] as GNBuild
+  [Ninja构建工具] as NinjaBuild
+  [Webpack打包] as WebpackBuild
+  [TypeScript编译] as TypeScriptCompile
+}
+
+package "平台支持" {
+  [macOS平台] as MacOSPlatform
+  [Windows平台] as WindowsPlatform
+  [Linux平台] as LinuxPlatform
+}
+
+package "平台特定实现" {
+  [Cocoa (macOS)] as CocoaImpl
+  [Win32 API (Windows)] as Win32Impl
+  [GTK/X11 (Linux)] as GTKImpl
+}
+
+package "依赖管理" {
+  [npm包管理] as NPMPackageManager
+  [yarn包管理] as YarnPackageManager
+  [patches补丁] as Patches
+  [DEPS文件] as DEPSFile
+}
+
+package "开发工具链" {
+  [TypeScript] as TypeScript
+  [ESLint] as ESLint
+  [Clang Format] as ClangFormat
+  [测试框架] as TestFramework
+  [调试工具] as DebugTools
+}
+
+package "构建产物" {
+  [可执行文件] as Executable
+  [动态库] as DynamicLibrary
+  [资源文件] as ResourceFiles
+  [ASAR包] as ASARPackage
+}
+
+package "开发环境" {
+  [开发工具] as DevTools
+  [热重载] as HotReload
+  [源码映射] as SourceMap
+  [性能分析] as Profiling
+}
+
+package "安全机制" {
+  [沙箱] as Sandbox
+  [内容安全策略] as CSP
+  [权限系统] as PermissionSystem
+  [代码签名] as CodeSigning
+}
+
+' 核心运行时关系
+Chromium --> ContentModule
+Chromium --> BlinkEngine
+Chromium --> NetworkStack
+Chromium --> MediaStack
+Chromium --> GPUAcceleration
+Chromium --> V8Engine
+
+NodeJS --> NodeRuntime
+NodeJS --> NodeCoreModules
+NodeJS --> NPMEcosystem
+NodeJS --> EventLoop
+NodeJS --> LibUV
+NodeJS --> V8Engine
+
+' 构建系统关系
+GNBuild --> NinjaBuild
+GNBuild --> WebpackBuild
+GNBuild --> TypeScriptCompile
+WebpackBuild --> TypeScriptCompile
+
+' 平台支持
+MacOSPlatform --> CocoaImpl
+WindowsPlatform --> Win32Impl
+LinuxPlatform --> GTKImpl
+
+CocoaImpl --> Chromium
+Win32Impl --> Chromium
+GTKImpl --> Chromium
+
+CocoaImpl --> NodeJS
+Win32Impl --> NodeJS
+GTKImpl --> NodeJS
+
+' 依赖管理
+NPMPackageManager --> Patches
+YarnPackageManager --> Patches
+Patches --> DEPSFile
+
+' 开发工具链
+TypeScript --> TypeScriptCompile
+ESLint --> TypeScript
+ClangFormat --> TypeScript
+TestFramework --> TypeScript
+DebugTools --> TypeScript
+
+' 构建产物
+GNBuild --> Executable
+GNBuild --> DynamicLibrary
+GNBuild --> ResourceFiles
+WebpackBuild --> ASARPackage
+
+' 开发环境
+DevTools --> Chromium
+HotReload --> NodeJS
+SourceMap --> TypeScriptCompile
+Profiling --> V8Engine
+
+' 安全机制
+Sandbox --> Chromium
+CSP --> Chromium
+PermissionSystem --> Chromium
+CodeSigning --> Executable
+
+' 运行时集成
+Chromium --> V8Engine
+NodeJS --> V8Engine
+BlinkEngine --> V8Engine
+
+note right of Chromium
+  Chromium提供：
+  - Web内容渲染
+  - 网络请求处理
+  - 媒体播放
+  - GPU加速渲染
+end note
+
+note right of NodeJS
+  Node.js提供：
+  - JavaScript运行时
+  - 文件系统访问
+  - 网络编程能力
+  - 丰富的NPM生态
+end note
+
+note right of V8Engine
+  V8引擎：
+  - JavaScript执行引擎
+  - 内存管理
+  - JIT编译优化
+  - 垃圾回收
+end note
+
+note right of GNBuild
+  构建系统：
+  - GN用于配置生成
+  - Ninja用于实际构建
+  - Webpack用于JS打包
+  - TypeScript用于类型检查
+end note
+
+note right of Patches
+  补丁系统：
+  - 修改Chromium行为
+  - 修改Node.js行为
+  - 修改V8行为
+  - 集成Electron特定功能
+end note
+
+note right of Sandbox
+  安全机制：
+  - 渲染进程沙箱隔离
+  - 内容安全策略
+  - 权限控制系统
+  - 代码签名验证
+end note
+
+@enduml
+
